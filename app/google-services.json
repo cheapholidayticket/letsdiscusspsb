@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "388086553590",
+    "firebase_url": "https://lets-discuss-psb.firebaseio.com",
+    "project_id": "lets-discuss-psb",
+    "storage_bucket": "lets-discuss-psb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:388086553590:android:c820aacb00a298ed9605d7",
+        "android_client_info": {
+          "package_name": "com.wong.letsdiscusspsb"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "388086553590-2cj9lj7s0r8c1kj7ifb33iph2a3rlagp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBi9JkMp2JrM6Hx2x_JIS2jFQk_6-AHmcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "388086553590-2cj9lj7s0r8c1kj7ifb33iph2a3rlagp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
