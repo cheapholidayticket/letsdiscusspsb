@@ -11,17 +11,26 @@
             android:title="Profile"
             android:icon="@drawable/ic_profile"/>
 
-        <item android:id="@+id/friend"
-            android:title="Friend"
-            android:icon="@drawable/ic_friend"/>
+<!--        <item android:id="@+id/friend"-->
+<!--            android:title="Friend"-->
+<!--            android:icon="@drawable/ic_friend"/>-->
 
-        <item android:id="@+id/findFriend"
-            android:title="Find Friend"
-            android:icon="@drawable/ic_find_friend"/>
+<!--        <item android:id="@+id/findFriend"-->
+<!--            android:title="Find Friend"-->
+<!--            android:icon="@drawable/ic_find_friend"/>-->
 
         <item android:id="@+id/logOut"
             android:title="Log Out"
             android:icon="@drawable/ic_logout"/>
+
+    </group>
+
+    <group android:id="@+id/comingSoon">
+
+        <item
+            android:title="Message Friends"
+            android:id="@+id/message">
+        </item>
 
     </group>
 </menu>

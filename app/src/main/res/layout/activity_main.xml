@@ -34,8 +34,8 @@
 
         <ImageView
             android:id="@+id/addImagePost"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_marginStart="8dp"
             app:layout_constraintBottom_toBottomOf="@+id/inputAddPost"
             app:layout_constraintStart_toStartOf="@+id/inputAddPost"
@@ -54,7 +54,7 @@
             app:srcCompat="@drawable/send" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler"
+            android:id="@+id/recyclerViewMainActivity"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
