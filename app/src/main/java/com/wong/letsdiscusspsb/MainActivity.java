@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,17 +42,23 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
+import com.wong.letsdiscusspsb.Utils.CommentsVariables;
 import com.wong.letsdiscusspsb.Utils.PostsVariables;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static android.os.Build.VERSION_CODES.M;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final int REQUEST_CODE = 101 ;
+    private static final int REQUEST_CODE = 101;
     Toolbar toolbar;
     DrawerLayout drawerLayout;
     NavigationView navigationView;
@@ -57,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     FirebaseUser mUser;
     DatabaseReference mUserRef;
     DatabaseReference postRef;
+    DatabaseReference likeRef;
+    DatabaseReference commentRef;
     String profileImageUrlData;
     String userNameData;
     CircleImageView profileImageHeader;
@@ -70,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     FirebaseRecyclerAdapter<PostsVariables, MyViewHolder> adapter;
     FirebaseRecyclerOptions<PostsVariables> options;
     RecyclerView recyclerView;
+    FirebaseRecyclerOptions<CommentsVariables> CommentOptions;
+    FirebaseRecyclerAdapter<CommentsVariables, CommentViewHolder> CommentAdapter;
 
 
     @Override
@@ -94,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mUser = mAuth.getCurrentUser();
         mUserRef = FirebaseDatabase.getInstance().getReference().child("Users");
         postRef = FirebaseDatabase.getInstance().getReference().child("Posts");
+        likeRef = FirebaseDatabase.getInstance().getReference().child("Likes");
+        commentRef = FirebaseDatabase.getInstance().getReference().child("Comments");
         postImageRef = FirebaseStorage.getInstance().getReference().child("PostImages");
 
         drawerLayout = findViewById(R.id.drawerLayout);
@@ -129,12 +144,92 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setQuery(postRef, PostsVariables.class).build();
         adapter = new FirebaseRecyclerAdapter<PostsVariables, MyViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull MyViewHolder holder, int position, @NonNull PostsVariables model) {
+            protected void onBindViewHolder(@NonNull final MyViewHolder holder, int position, @NonNull PostsVariables model) {
                 holder.postDescription.setText(model.getPostDesc());
-                holder.timeAgo.setText(model.getDate());
+                final String timeAgo = calculateTimeAgo(model.getDate());
+                holder.timeAgo.setText(timeAgo);
                 holder.userName.setText(model.getUsername());
                 Picasso.get().load(model.getPostImageUrl()).into(holder.postImage);
                 Picasso.get().load(model.getUserProfileImage()).into(holder.profileImage);
+
+                //image count likes & comment reference
+                final String postKey = getRef(position).getKey();
+                holder.countLikes(postKey, mUser.getUid(), likeRef);
+                holder.countComments(postKey, mUser.getUid(), commentRef);
+
+                //like image count
+                holder.likeImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        likeRef.child(postKey).child(mUser.getUid())
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()) //user already like the comment, remove like
+                                        {
+                                            likeRef.child(postKey).child(mUser.getUid()).removeValue();
+                                            holder.likeImage.setColorFilter(Color.GRAY);
+                                        } else {
+                                            likeRef.child(postKey).child(mUser.getUid()).setValue("like");
+                                            holder.likeImage.setColorFilter(Color.BLUE);
+                                        }
+                                        notifyDataSetChanged();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                        Toast.makeText(MainActivity.this, "" + error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                                    }
+                                });
+
+
+                    }
+                });
+                LoadComments(postKey);
+
+                holder.commentSend.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String comment = holder.inputComment.getText().toString();
+                        if (comment.isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Comments cannot be empty",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            AddComment(holder, postKey, commentRef, mUser.getUid(), comment, commentDate);
+                        }
+
+                    }
+                });
+            }
+
+            //load post Comments
+            private void LoadComments(String postKey) {
+                MyViewHolder.recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+
+                CommentOptions = new FirebaseRecyclerOptions.Builder<CommentsVariables>()
+                        .setQuery(commentRef.child(postKey), CommentsVariables.class).build();
+                CommentAdapter = new FirebaseRecyclerAdapter<CommentsVariables, CommentViewHolder>(CommentOptions) {
+                    @Override
+                    protected void onBindViewHolder(@NonNull CommentViewHolder holder,
+                                                    int position, @NonNull CommentsVariables model) {
+                        Log.d("comment_data", "onBindViewHolder: " + model.getComment());
+                        Picasso.get().load(model.getProfileImageUrl()).into(holder.profileImage);
+                        holder.username.setText(model.getUsername());
+                        holder.comment.setText(model.getComment());
+                    }
+
+                    @NonNull
+                    @Override
+                    public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+                        View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.single_view_comment, parent, false);
+                        return new CommentViewHolder(view);
+                    }
+                };
+                CommentAdapter.startListening();
+                MyViewHolder.recyclerView.setAdapter(CommentAdapter);
             }
 
             @NonNull
@@ -150,12 +245,63 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         recyclerView.setAdapter(adapter);
     }
 
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+    final String commentDate = formatter.format(date);
+
+    private void AddComment(final MyViewHolder holder, String postKey,
+                            DatabaseReference commentRef, String Uid, String comment, String commentDate) {
+
+        HashMap hashMap = new HashMap();
+        hashMap.put("username", userNameData);
+        hashMap.put("profileImageUrl", profileImageUrlData);
+        hashMap.put("comment", comment);
+        hashMap.put("date", commentDate);
+
+        commentRef.child(postKey).push().updateChildren(hashMap)
+                .addOnCompleteListener(new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+
+                        if (task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "Comments Added", Toast.LENGTH_SHORT).show();
+                            adapter.notifyDataSetChanged();
+                            holder.inputComment.setText(null); //clear input fields
+                        } else {
+                            Toast.makeText(MainActivity.this, "" + task.getException().toString(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        //todo pushID new one for 2nd and more comments
+
+                    }
+                });
+    }
+
+    private String calculateTimeAgo(String date) {
+
+        //timeAgo https://stackoverflow.com/questions/35858608/how-to-convert-time-to-time-ago-in-android
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+
+        try {
+            long time = sdf.parse(date).getTime();
+            long now = System.currentTimeMillis();
+            CharSequence ago =
+                    DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS);
+            return ago + "";
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null)
-        {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             imageUri = data.getData();
             addImagePost.setImageURI(imageUri);
         }
@@ -164,14 +310,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void AddPost() {
         final String postDesc = inputPostDescription.getText().toString();
 
-        if (postDesc.isEmpty() || postDesc.length() < 2)
-        {
+        if (postDesc.isEmpty() || postDesc.length() < 2) {
             inputPostDescription.setError("Comments cannot be empty");
-        } else if (imageUri == null)
-        {
+        } else if (imageUri == null) {
             Toast.makeText(this, "Select an Image", Toast.LENGTH_SHORT).show();
-        } else
-        {
+        } else {
             mLoadingBar.setTitle("Adding Post");
             mLoadingBar.setCanceledOnTouchOutside(false);
             mLoadingBar.show();
@@ -182,50 +325,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             postImageRef.child(mUser.getUid() + strDate).putFile(imageUri)
                     .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                    if (task.isSuccessful())
-                    {
-                        postImageRef.child(mUser.getUid() + strDate).getDownloadUrl()
-                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                postImageRef.child(mUser.getUid() + strDate).getDownloadUrl()
+                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                            @Override
+                                            public void onSuccess(Uri uri) {
 
-                                HashMap hashMap = new HashMap();
-                                hashMap.put("date", strDate);
-                                hashMap.put("postImageUrl", uri.toString());
-                                hashMap.put("postDesc", postDesc);
-                                hashMap.put("userProfileImage", profileImageUrlData);
-                                hashMap.put("username", userNameData);
+                                                HashMap hashMap = new HashMap();
+                                                hashMap.put("date", strDate);
+                                                hashMap.put("postImageUrl", uri.toString());
+                                                hashMap.put("postDesc", postDesc);
+                                                hashMap.put("userProfileImage", profileImageUrlData);
+                                                hashMap.put("username", userNameData);
 
-                                postRef.child(mUser.getUid() + strDate).updateChildren(hashMap)
-                                        .addOnCompleteListener(new OnCompleteListener() {
-                                    @Override
-                                    public void onComplete(@NonNull Task task) {
+                                                postRef.child(mUser.getUid() + strDate).updateChildren(hashMap)
+                                                        .addOnCompleteListener(new OnCompleteListener() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task task) {
 
-                                        if (task.isSuccessful())
-                                        {
-                                            mLoadingBar.dismiss();
-                                            Toast.makeText(MainActivity.this, "Posted Successfully", Toast.LENGTH_SHORT).show();
-                                            addImagePost.setImageResource(R.drawable.ic_add_post);
-                                            inputPostDescription.setText("");
-                                        } else
-                                        {
-                                            mLoadingBar.dismiss();
-                                            Toast.makeText(MainActivity.this,
-                                                    "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                });
+                                                                if (task.isSuccessful()) {
+                                                                    mLoadingBar.dismiss();
+                                                                    Toast.makeText(MainActivity.this, "Posted Successfully", Toast.LENGTH_SHORT).show();
+                                                                    addImagePost.setImageResource(R.drawable.ic_add_post);
+                                                                    inputPostDescription.setText("");
+                                                                } else {
+                                                                    mLoadingBar.dismiss();
+                                                                    Toast.makeText(MainActivity.this,
+                                                                            "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        });
+                            } else {
+                                mLoadingBar.dismiss();
+                                Toast.makeText(MainActivity.this, "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
                             }
-                        });
-                    }
-                    else {
-                        mLoadingBar.dismiss();
-                        Toast.makeText(MainActivity.this, "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+                        }
+                    });
         }
     }
 
@@ -236,16 +375,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (mUser == null) //user logged out
         {
             UserToLoginActivity();
-        }
-        else //user exists
+        } else //user exists
         {
             //get data from firebase
             mUserRef.child(mUser.getUid()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     //if user has setup users
-                    if (snapshot.exists())
-                    {
+                    if (snapshot.exists()) {
                         profileImageUrlData = snapshot.child("profileImage").getValue().toString();
                         userNameData = snapshot.child("username").getValue().toString();
                         //Toast.makeText(MainActivity.this, profileImageUrlData, Toast.LENGTH_SHORT).show();
@@ -272,8 +409,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case R.id.home:
                 Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
                 break;
@@ -283,7 +419,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
 
             case R.id.logOut:
-                Toast.makeText(this, "Log Out", Toast.LENGTH_SHORT).show();
+                mAuth.signOut();
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
                 break;
 
             case R.id.message:
@@ -295,8 +434,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home)
-        {
+        if (item.getItemId() == android.R.id.home) {
             drawerLayout.openDrawer(GravityCompat.START);
             return true;
         }

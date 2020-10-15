@@ -23,7 +23,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:hint="Comment here.........."
+            android:hint="Post new questions....."
             android:paddingLeft="50dp"
             android:paddingTop="10dp"
             android:paddingRight="10dp"

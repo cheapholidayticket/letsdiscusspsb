@@ -53,7 +53,7 @@ public class SetupUser extends AppCompatActivity {
         setContentView(R.layout.activity_setup_user);
         toolbar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
-        getActionBar().setTitle("Setup Profile");
+        getSupportActionBar().setTitle("Setup Profile");
 
 
         profileImageView = findViewById(R.id.profile_image);

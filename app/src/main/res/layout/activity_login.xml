@@ -49,14 +49,16 @@
         android:layout_marginEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/LoginIntro">
+        app:layout_constraintTop_toBottomOf="@+id/LoginIntro"
+      >
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Email"
             android:inputType="textEmailAddress"
-            android:textColor="@color/colorWhite" />
+            android:textColor="@color/colorWhite"
+           />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -87,7 +89,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
-        android:text="Forgot Password"
+        android:text="Forgot your login password?"
         android:textColor="@color/colorWhite"
         android:textSize="18sp"
         android:textStyle="bold"

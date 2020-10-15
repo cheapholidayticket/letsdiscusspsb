@@ -81,8 +81,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/postImage"
                 app:layout_constraintTop_toBottomOf="@+id/postImage"
                 app:srcCompat="@drawable/ic_likes" />
@@ -91,6 +89,7 @@
                 android:id="@+id/likeCounter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:text="10"
                 app:layout_constraintBottom_toBottomOf="@+id/likeImage"
                 app:layout_constraintStart_toEndOf="@+id/likeImage"
@@ -102,8 +101,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/postImage"
                 app:layout_constraintTop_toBottomOf="@+id/postImage"
                 app:srcCompat="@drawable/ic_comment" />
@@ -112,10 +109,61 @@
                 android:id="@+id/commentCounter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:text="10"
                 app:layout_constraintBottom_toBottomOf="@+id/commentImage"
                 app:layout_constraintEnd_toStartOf="@+id/commentImage"
                 app:layout_constraintTop_toTopOf="@+id/commentImage" />
+
+            <View
+                android:id="@+id/view"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="3dp"
+                android:background="@color/colorPrimary"
+                app:layout_constraintEnd_toEndOf="@+id/commentImage"
+                app:layout_constraintStart_toStartOf="@+id/likeImage"
+                app:layout_constraintTop_toBottomOf="@+id/likeImage" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewComment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="@+id/commentImage"
+                app:layout_constraintStart_toStartOf="@+id/likeImage"
+                app:layout_constraintTop_toBottomOf="@+id/view" />
+
+            <EditText
+                android:id="@+id/inputComments"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/input_comment_bg"
+                android:ems="10"
+                android:hint="Questions and Comments ....."
+                android:inputType="textPersonName"
+                android:paddingStart="10dp"
+                android:paddingLeft="20dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/recyclerViewComment"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/recyclerViewComment"
+                app:layout_constraintTop_toBottomOf="@+id/recyclerViewComment" />
+
+            <ImageView
+                android:id="@+id/sendComments"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/inputComments"
+                app:layout_constraintEnd_toEndOf="@+id/inputComments"
+                app:layout_constraintTop_toTopOf="@+id/inputComments"
+                app:srcCompat="@drawable/send" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
