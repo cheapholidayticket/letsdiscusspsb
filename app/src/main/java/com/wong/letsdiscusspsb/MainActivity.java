@@ -415,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
 
             case R.id.profile:
-                Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
+                startActivity (new Intent(MainActivity.this, ProfileActivity.class));
                 break;
 
             case R.id.logOut:
