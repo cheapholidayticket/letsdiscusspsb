@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -17,7 +16,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
-import com.wong.letsdiscusspsb.R;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -26,7 +24,7 @@ public class ProfileActivity extends AppCompatActivity {
     CircleImageView profileImageView;
     EditText inputUserName;
     EditText inputCity;
-    EditText inputProfession;
+    EditText inputUniversity;
     EditText inputCountry;
     Button btnUpdateProfile;
 
@@ -42,7 +40,7 @@ public class ProfileActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.profileCircleImageView);
         inputUserName = findViewById(R.id.inputUserName);
         inputCity = findViewById(R.id.inputCity);
-        inputProfession = findViewById(R.id.inputProfession);
+        inputUniversity = findViewById(R.id.inputUniversity);
         inputCountry = findViewById(R.id.inputCountry);
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
 
@@ -58,14 +56,14 @@ public class ProfileActivity extends AppCompatActivity {
                     String profileImageUrl = snapshot.child("profileImage").getValue().toString();
                     String city = snapshot.child("city").getValue().toString();
                     String country = snapshot.child("country").getValue().toString();
-                    String profession = snapshot.child("profession").getValue().toString();
+                    String university = snapshot.child("profession").getValue().toString();
                     String username = snapshot.child("username").getValue().toString();
 
                     Picasso.get().load(profileImageUrl).into(profileImageView);
                     inputCity.setText(city);
                     inputUserName.setText(username);
                     inputCountry.setText(country);
-                    inputProfession.setText(profession);
+                    inputUniversity.setText(university);
                 }
                 else
                 {

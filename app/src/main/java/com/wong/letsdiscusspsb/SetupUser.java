@@ -37,7 +37,7 @@ public class SetupUser extends AppCompatActivity {
     EditText inputUsername;
     EditText inputCity;
     EditText inputCountry;
-    EditText inputProfession;
+    EditText inputUniversity;
     Button buttonSave;
     Uri imageUri;
     FirebaseAuth mAuth;
@@ -60,7 +60,7 @@ public class SetupUser extends AppCompatActivity {
         inputUsername = findViewById(R.id.inputUserName);
         inputCity = findViewById(R.id.inputCity);
         inputCountry = findViewById(R.id.inputCountry);
-        inputProfession = findViewById(R.id.inputProfession);
+        inputUniversity = findViewById(R.id.inputUniversity);
         buttonSave = findViewById(R.id.buttonSave);
         mLoadingBar = new ProgressDialog(this);
 
@@ -91,7 +91,7 @@ public class SetupUser extends AppCompatActivity {
         final String username = inputUsername.getText().toString();
         final String city = inputCity.getText().toString();
         final String country = inputCountry.getText().toString();
-        final String profession = inputProfession.getText().toString();
+        final String university = inputUniversity.getText().toString();
 
         if (username.isEmpty() || username.length() < 3)
         {
@@ -105,9 +105,9 @@ public class SetupUser extends AppCompatActivity {
         {
             showError(inputCountry, "Country cannot be blank");
         }
-        else if (profession.isEmpty())
+        else if (university.isEmpty())
         {
-            showError(inputProfession,"Profession cannot be blank");
+            showError(inputUniversity,"University cannot be blank");
         }
         else if (imageUri == null)
         {
@@ -135,7 +135,7 @@ public class SetupUser extends AppCompatActivity {
                                             hashMap.put("username", username);
                                             hashMap.put("city", city);
                                             hashMap.put("country", country);
-                                            hashMap.put("profession", profession);
+                                            hashMap.put("profession", university);
                                             hashMap.put("profileImage", uri.toString());
                                             hashMap.put("status", "offline");
 

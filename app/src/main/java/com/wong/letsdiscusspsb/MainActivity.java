@@ -138,6 +138,69 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LoadPost();
     }
 
+
+    private void AddPost() {
+        final String postDesc = inputPostDescription.getText().toString();
+
+        if (postDesc.isEmpty() || postDesc.length() < 2) {
+            inputPostDescription.setError("Comments cannot be empty");
+        } else if (imageUri == null) {
+            Toast.makeText(this, "Select an Image", Toast.LENGTH_SHORT).show();
+        } else {
+            mLoadingBar.setTitle("Adding Post");
+            mLoadingBar.setCanceledOnTouchOutside(false);
+            mLoadingBar.show();
+
+            Date date = new Date();
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+            final String strDate = formatter.format(date);
+
+            postImageRef.child(mUser.getUid() + strDate).putFile(imageUri)
+                    .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                postImageRef.child(mUser.getUid() + strDate).getDownloadUrl()
+                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                            @Override
+                                            public void onSuccess(Uri uri) {
+
+                                                HashMap hashMap = new HashMap();
+                                                hashMap.put("date", strDate);
+                                                hashMap.put("postImageUrl", uri.toString());
+                                                hashMap.put("postDesc", postDesc);
+                                                hashMap.put("userProfileImage", profileImageUrlData);
+                                                hashMap.put("username", userNameData);
+
+                                                postRef.child(mUser.getUid() + strDate).updateChildren(hashMap)
+                                                        .addOnCompleteListener(new OnCompleteListener() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task task) {
+
+                                                                if (task.isSuccessful()) {
+                                                                    mLoadingBar.dismiss();
+                                                                    Toast.makeText(MainActivity.this, "Posted Successfully", Toast.LENGTH_SHORT).show();
+                                                                    addImagePost.setImageResource(R.drawable.ic_add_post);
+                                                                    inputPostDescription.setText("");
+                                                                } else {
+                                                                    mLoadingBar.dismiss();
+                                                                    Toast.makeText(MainActivity.this,
+                                                                            "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        });
+                            } else {
+                                mLoadingBar.dismiss();
+                                Toast.makeText(MainActivity.this, "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }
+    }
+
+
     private void LoadPost() {
         //initialize options & adapter
         options = new FirebaseRecyclerOptions.Builder<PostsVariables>()
@@ -153,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Picasso.get().load(model.getUserProfileImage()).into(holder.profileImage);
 
                 //image count likes & comment reference
-                final String postKey = getRef(position).getKey();
+                final String postKey = getRef(position).getKey();  //this returns the ID of the post
                 holder.countLikes(postKey, mUser.getUid(), likeRef);
                 holder.countComments(postKey, mUser.getUid(), commentRef);
 
@@ -272,8 +335,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     Toast.LENGTH_SHORT).show();
                         }
 
-                        //todo pushID new one for 2nd and more comments
-
                     }
                 });
     }
@@ -283,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //timeAgo https://stackoverflow.com/questions/35858608/how-to-convert-time-to-time-ago-in-android
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-
+    
         try {
             long time = sdf.parse(date).getTime();
             long now = System.currentTimeMillis();
@@ -304,67 +365,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             imageUri = data.getData();
             addImagePost.setImageURI(imageUri);
-        }
-    }
-
-    private void AddPost() {
-        final String postDesc = inputPostDescription.getText().toString();
-
-        if (postDesc.isEmpty() || postDesc.length() < 2) {
-            inputPostDescription.setError("Comments cannot be empty");
-        } else if (imageUri == null) {
-            Toast.makeText(this, "Select an Image", Toast.LENGTH_SHORT).show();
-        } else {
-            mLoadingBar.setTitle("Adding Post");
-            mLoadingBar.setCanceledOnTouchOutside(false);
-            mLoadingBar.show();
-
-            Date date = new Date();
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-            final String strDate = formatter.format(date);
-
-            postImageRef.child(mUser.getUid() + strDate).putFile(imageUri)
-                    .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                postImageRef.child(mUser.getUid() + strDate).getDownloadUrl()
-                                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                            @Override
-                                            public void onSuccess(Uri uri) {
-
-                                                HashMap hashMap = new HashMap();
-                                                hashMap.put("date", strDate);
-                                                hashMap.put("postImageUrl", uri.toString());
-                                                hashMap.put("postDesc", postDesc);
-                                                hashMap.put("userProfileImage", profileImageUrlData);
-                                                hashMap.put("username", userNameData);
-
-                                                postRef.child(mUser.getUid() + strDate).updateChildren(hashMap)
-                                                        .addOnCompleteListener(new OnCompleteListener() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task task) {
-
-                                                                if (task.isSuccessful()) {
-                                                                    mLoadingBar.dismiss();
-                                                                    Toast.makeText(MainActivity.this, "Posted Successfully", Toast.LENGTH_SHORT).show();
-                                                                    addImagePost.setImageResource(R.drawable.ic_add_post);
-                                                                    inputPostDescription.setText("");
-                                                                } else {
-                                                                    mLoadingBar.dismiss();
-                                                                    Toast.makeText(MainActivity.this,
-                                                                            "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
-                                                                }
-                                                            }
-                                                        });
-                                            }
-                                        });
-                            } else {
-                                mLoadingBar.dismiss();
-                                Toast.makeText(MainActivity.this, "" + task.getException().toString(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
         }
     }
 
@@ -426,7 +426,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
 
             case R.id.message:
-                Toast.makeText(this, "This feature will be available in the next update", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "This feature will be available in the next update",
+                        Toast.LENGTH_SHORT).show();
                 break;
         }
         return true;

@@ -66,13 +66,10 @@ public class MyViewHolder extends RecyclerView.ViewHolder {
                 else
                 {
                     likeCounter.setText("0");
-                 }
-
+                }
             }
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
         likeRef.child(postKey).addValueEventListener(new ValueEventListener() {
             @Override
