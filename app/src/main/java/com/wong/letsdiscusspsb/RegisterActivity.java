@@ -72,7 +72,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         //validate email string only accepts @outlook.com during test,
         //we can also accept only @coventry email to accept only coventry students registration
-        if (email.isEmpty() & !email.contains("@outlook.com") || !email.contains("@uni.coventry.ac.uk"))
+        if (!email.contains("@outlook.com") & !email.contains("@uni.coventry.ac.uk"))
         {
             showError(inputEmail, "Student email or outlook users accepted only");
 

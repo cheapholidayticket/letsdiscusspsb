@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
         //validate email string only accepts @outlook.com during test,
         //we can also accept only @coventry email to accept only coventry students registration
-        if (email.isEmpty() & !email.contains("@outlook.com") || !email.contains("@uni.coventry.ac.uk"))  //if does not show @outlook it will show error
+        if (!email.contains("@uni.coventry.ac.uk") & !email.contains("@outlook.com"))  //if does not show @outlook it will show error
         {
             showError(inputEmail, "Student email or outlook users accepted only");
             //password length must be > 5 characters

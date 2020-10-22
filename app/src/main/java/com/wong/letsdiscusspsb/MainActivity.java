@@ -202,10 +202,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     private void LoadPost() {
+
         //initialize options & adapter
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(false); //latest posts to top
+        linearLayoutManager.setStackFromEnd(false); //scrolls to top
+        recyclerView.setLayoutManager(linearLayoutManager);
         options = new FirebaseRecyclerOptions.Builder<PostsVariables>()
                 .setQuery(postRef, PostsVariables.class).build();
         adapter = new FirebaseRecyclerAdapter<PostsVariables, MyViewHolder>(options) {
+
+
+
             @Override
             protected void onBindViewHolder(@NonNull final MyViewHolder holder, int position, @NonNull PostsVariables model) {
                 holder.postDescription.setText(model.getPostDesc());
@@ -266,10 +274,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
             }
 
-            //load post Comments
+            //load  post Comments
             private void LoadComments(String postKey) {
-                MyViewHolder.recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 
+
+                MyViewHolder.recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
                 CommentOptions = new FirebaseRecyclerOptions.Builder<CommentsVariables>()
                         .setQuery(commentRef.child(postKey), CommentsVariables.class).build();
                 CommentAdapter = new FirebaseRecyclerAdapter<CommentsVariables, CommentViewHolder>(CommentOptions) {
